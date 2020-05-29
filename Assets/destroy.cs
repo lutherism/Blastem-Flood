@@ -27,5 +27,10 @@ public class destroy : MonoBehaviour
           //GetComponent<Rigidbody>().AddForce(transform.forward * bulletForce);
           HUD.GetComponent<HUD>().onKill();
         }
+        if (collision.gameObject.tag == "damagable")
+        {
+          collision.gameObject.GetComponent<damagehydra>().onDamage();
+          //GetComponent<Rigidbody>().AddForce(transform.forward * bulletForce);
+        }
     }
 }

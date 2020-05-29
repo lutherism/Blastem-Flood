@@ -1,66 +1,43 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class wasd : MonoBehaviour
 {
     // Start is called before the first frame update
-    float mainSpeed = 5.0f; //regular speed
-    float shiftAdd = 10.0f; //multiplied by how long shift is held.  Basically running
-    float maxShift = 1000.0f; //Maximum speed when holdin gshift
     float camSens = 0.25f; //How sensitive it with mouse
     private Vector3 lastMouse = new Vector3(255, 255, 255); //kind of in the middle of the screen, rather than at the top (play)
     private float totalRun= 1.0f;
+    public float speed = 6.0F;
+    public float airSpeed = 2.0F;
+    public float jumpSpeed = 250.0F;
+    public float gravity = 8.0F;
+    private Vector3 moveDirection = Vector3.zero;
 
-    void Update () {
-      lastMouse = Input.mousePosition - lastMouse ;
-      lastMouse = new Vector3(0, lastMouse.x * camSens, 0 );
-      lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x , transform.eulerAngles.y + lastMouse.y, 0);
-      transform.eulerAngles = lastMouse;
-      lastMouse =  Input.mousePosition;
-        //Keyboard commands
-        float f = 0.0f;
-        Vector3 p = GetBaseInput();
-        if (Input.GetKey (KeyCode.LeftShift)){
-            totalRun += Time.deltaTime;
-            p  = p * totalRun * shiftAdd;
-            p.x = Mathf.Clamp(p.x, -maxShift, maxShift);
-            p.y = Mathf.Clamp(p.y, -maxShift, maxShift);
-            p.z = Mathf.Clamp(p.z, -maxShift, maxShift);
-        }
-        else{
-            totalRun = Mathf.Clamp(totalRun * 0.5f, 1f, 1000f);
-            p = p * mainSpeed;
-        }
-
-        p = p * Time.deltaTime;
-       Vector3 newPosition = transform.position;
-        if (Input.GetKey(KeyCode.Space)){ //If player wants to move on X and Z axis only
-            transform.Translate(p);
-            newPosition.x = transform.position.x;
-            newPosition.z = transform.position.z;
-            transform.position = newPosition;
-        }
-        else{
-            transform.Translate(p);
-        }
+    void Start() {
 
     }
 
-    private Vector3 GetBaseInput() { //returns the basic values, if it's 0 than it's not active.
-        Vector3 p_Velocity = new Vector3();
-        if (Input.GetKey (KeyCode.W)){
-            p_Velocity += new Vector3(0, 0 , 1);
-        }
-        if (Input.GetKey (KeyCode.S)){
-            p_Velocity += new Vector3(0, 0, -1);
-        }
-        if (Input.GetKey (KeyCode.A)){
-            p_Velocity += new Vector3(-1, 0, 0);
-        }
-        if (Input.GetKey (KeyCode.D)){
-            p_Velocity += new Vector3(1, 0, 0);
-        }
-        return p_Velocity;
+    void Update () {
+      if (Input.GetKeyDown(KeyCode.Escape)) {
+        SceneManager.LoadScene("Menu");
+      }
+      CharacterController controller = GetComponent<CharacterController>();
+      if (controller.isGrounded) {
+          moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+          moveDirection = transform.TransformDirection(moveDirection);
+          moveDirection *= speed;
+          if (Input.GetButton("Jump"))
+              moveDirection.y = jumpSpeed;
+
+      } /*else {
+        moveDirection = new Vector3(Input.GetAxis("Horizontal"), 1, Input.GetAxis("Vertical"));
+        moveDirection = transform.TransformDirection(moveDirection);
+        moveDirection *= airSpeed;
+      }*/
+      moveDirection.y -= gravity * Time.deltaTime;
+      controller.Move(moveDirection * Time.deltaTime);
+
     }
 }
